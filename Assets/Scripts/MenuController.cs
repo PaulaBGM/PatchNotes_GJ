@@ -8,8 +8,8 @@ public class MenuController : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private GameObject mainMenuCanvas;
-    [SerializeField] private Button[] levelButtons;
-    [SerializeField] private Button goodButton;
+    [SerializeField] private Button[] brokenButtons; // Botones rotos: Difícil, Normal, Fácil
+    [SerializeField] private Button goodButton;      // Botón del nivel bueno
 
     private int brokenLossCount;
 
@@ -23,39 +23,56 @@ public class MenuController : MonoBehaviour
         }
 
         Instance = this;
-        DontDestroyOnLoad(gameObject); // Mantener entre escenas
+        DontDestroyOnLoad(gameObject);
     }
 
     private void Start()
     {
         if (mainMenuCanvas != null) mainMenuCanvas.SetActive(true);
+
+        // Solo mostrar el primer botón roto al inicio
+        for (int i = 0; i < brokenButtons.Length; i++)
+            brokenButtons[i].gameObject.SetActive(i == 0);
+
         if (goodButton != null) goodButton.gameObject.SetActive(false);
 
-        if (levelButtons != null)
+        // Configurar botones rotos
+        for (int i = 0; i < brokenButtons.Length; i++)
         {
-            for (int i = 0; i < levelButtons.Length; i++)
-            {
-                int idx = i;
-                levelButtons[i].onClick.AddListener(() => OnLevelSelected(idx));
-            }
+            int idx = i;
+            brokenButtons[i].onClick.AddListener(() => OnLevelSelected(idx));
         }
 
+        // Configurar botón bueno
         if (goodButton != null)
             goodButton.onClick.AddListener(OnGoodButton);
     }
 
+    // Se llama al pulsar un botón roto
     public void OnLevelSelected(int idx)
     {
-        brokenLossCount++;
-        SceneManager.LoadScene(1);
-
-        if (brokenLossCount >= 3 && goodButton != null)
-            goodButton.gameObject.SetActive(true);
+        SceneManager.LoadScene(1); // carga nivel roto
     }
+
+    // Se llama desde LevelManager cuando el jugador pierde
+    public void OnPlayerDeath()
+    {
+        brokenLossCount++;
+        Debug.Log("OnPlayerDeath llamado. Total derrotas: " + brokenLossCount);
+
+        if (brokenLossCount < brokenButtons.Length)
+        {
+            brokenButtons[brokenLossCount].gameObject.SetActive(true);
+        }
+        else if (brokenLossCount >= brokenButtons.Length && goodButton != null)
+        {
+            goodButton.gameObject.SetActive(true);
+        }
+    }
+
 
     public void OnGoodButton()
     {
-        // Nivel correcto con controles invertidos
-        SceneManager.LoadScene(1);
+        SceneManager.LoadScene(1); // Nivel correcto con controles invertidos
     }
 }

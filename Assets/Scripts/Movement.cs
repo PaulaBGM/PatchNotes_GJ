@@ -12,15 +12,21 @@ public class Movement : MonoBehaviour
 
     private Rigidbody2D rb;
     private bool isGrounded;
+    private bool facingRight = true;
 
     // External input injection (x = -1..1). If null, uses legacy Input.
     private float injectedHorizontal = float.NaN;
 
+    // Referencia al SpriteRenderer del hijo
+    private SpriteRenderer spriteRenderer;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        // Important: freeze rotation to avoid tipping if using dynamic physics
         rb.freezeRotation = true;
+
+        // Asumimos que el hijo tiene el SpriteRenderer
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
     }
 
     private void Update()
@@ -29,12 +35,11 @@ public class Movement : MonoBehaviour
         float horiz = float.IsNaN(injectedHorizontal) ? Input.GetAxisRaw("Horizontal") : injectedHorizontal;
         Move(horiz);
 
-        // Jump input kept as legacy for simplicity; remains consistent across levels
+        // Jump input
         if (Input.GetButtonDown("Jump"))
             TryJump();
     }
 
-    // Public Move overload that accepts external horizontal input (useful for Input System)
     public void Move(float rawHorizontal)
     {
         // Normalize to -1/0/1 from legacy axes
@@ -43,10 +48,23 @@ public class Movement : MonoBehaviour
         if (invertedControls)
             moveInput *= -1f;
 
+        // Flip sprite según dirección
+        if (moveInput > 0 && !facingRight)
+            Flip();
+        else if (moveInput < 0 && facingRight)
+            Flip();
+
         // Apply X velocity; preserve Y
         Vector2 v = rb.linearVelocity;
         v.x = moveInput * speed;
         rb.linearVelocity = v;
+    }
+
+    private void Flip()
+    {
+        facingRight = !facingRight;
+        if (spriteRenderer != null)
+            spriteRenderer.flipX = !facingRight;
     }
 
     private void TryJump()
@@ -62,7 +80,6 @@ public class Movement : MonoBehaviour
             isGrounded = true;
     }
 
-    // Allow external systems (e.g. an Input System wrapper) to push horizontal input
     public void InjectHorizontalInput(float value)
     {
         injectedHorizontal = value;
@@ -73,6 +90,5 @@ public class Movement : MonoBehaviour
         injectedHorizontal = float.NaN;
     }
 
-    // Called by LevelManager to set inverted controls
     public void SetInvertedControls(bool value) => invertedControls = value;
 }
