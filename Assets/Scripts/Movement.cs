@@ -8,57 +8,71 @@ public class Movement : MonoBehaviour
     [SerializeField] private float jumpForce = 7f;
 
     [Header("Level Settings")]
-    [SerializeField] private bool invertedControls = false; // Enable in "good" levels
+    [SerializeField] private bool invertedControls = false; // Enable in "good" level
 
     private Rigidbody2D rb;
     private bool isGrounded;
 
+    // External input injection (x = -1..1). If null, uses legacy Input.
+    private float injectedHorizontal = float.NaN;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        // Important: freeze rotation to avoid tipping if using dynamic physics
+        rb.freezeRotation = true;
     }
 
     private void Update()
     {
-        Move();
-        Jump();
+        // Read inputs in Update (input timing)
+        float horiz = float.IsNaN(injectedHorizontal) ? Input.GetAxisRaw("Horizontal") : injectedHorizontal;
+        Move(horiz);
+
+        // Jump input kept as legacy for simplicity; remains consistent across levels
+        if (Input.GetButtonDown("Jump"))
+            TryJump();
     }
 
-    private void Move()
+    // Public Move overload that accepts external horizontal input (useful for Input System)
+    public void Move(float rawHorizontal)
     {
-        // Horizontal input
-        float moveInput = Input.GetAxisRaw("Horizontal"); // -1 (left) | 0 | 1 (right)
+        // Normalize to -1/0/1 from legacy axes
+        float moveInput = Mathf.Clamp(rawHorizontal, -1f, 1f);
 
-        // Invert controls if needed
         if (invertedControls)
-            moveInput *= -1;
+            moveInput *= -1f;
 
-        // Set velocity on X axis
-        Vector2 velocity = rb.linearVelocity;
-        velocity.x = moveInput * speed;
-        rb.linearVelocity = velocity;
+        // Apply X velocity; preserve Y
+        Vector2 v = rb.linearVelocity;
+        v.x = moveInput * speed;
+        rb.linearVelocity = v;
     }
 
-    private void Jump()
+    private void TryJump()
     {
-        // Jump only if grounded
-        if (Input.GetButtonDown("Jump") && isGrounded)
-        {
-            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            isGrounded = false;
-        }
+        if (!isGrounded) return;
+        rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+        isGrounded = false;
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        // Detect if touching the ground
         if (collision.gameObject.CompareTag("Ground"))
             isGrounded = true;
     }
 
-    // Public method to change control settings (used by LevelManager, for example)
-    public void SetInvertedControls(bool value)
+    // Allow external systems (e.g. an Input System wrapper) to push horizontal input
+    public void InjectHorizontalInput(float value)
     {
-        invertedControls = value;
+        injectedHorizontal = value;
     }
+
+    public void ClearInjectedInput()
+    {
+        injectedHorizontal = float.NaN;
+    }
+
+    // Called by LevelManager to set inverted controls
+    public void SetInvertedControls(bool value) => invertedControls = value;
 }
