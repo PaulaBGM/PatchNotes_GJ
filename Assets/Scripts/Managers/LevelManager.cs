@@ -13,7 +13,6 @@ public class LevelManager : MonoBehaviour
 
     [Header("Difficulty Settings")]
     [SerializeField] private bool isGoodLevel = false;
-    [SerializeField] private int easyExtraHoles = 1;
 
     [Header("Lose Settings")]
     [SerializeField] private float loseCanvasDelay = 1.5f;
@@ -21,7 +20,6 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private AudioClip deathSfx;
     [SerializeField] private AudioSource audioSource;
 
-    // Propiedades públicas para FireTrap
     public bool IsGoodLevel => isGoodLevel;
     public int BrokenLevelIndex => MenuController.Instance != null ? MenuController.Instance.BrokenLossCount : 0;
 
@@ -48,8 +46,9 @@ public class LevelManager : MonoBehaviour
         if (player != null)
             player.SetInvertedControls(isGoodLevel);
 
+        // Activar agujeros solo si el nivel no es el bueno
         for (int i = 0; i < holes.Length; i++)
-            holes[i].SetActive(!isGoodLevel && i < (isGoodLevel ? 0 : 1 + easyExtraHoles));
+            holes[i].SetActive(!isGoodLevel && i == 0);
     }
 
     public void PlayerDefeated(string reason)
@@ -61,7 +60,6 @@ public class LevelManager : MonoBehaviour
         if (audioSource != null && deathSfx != null)
             audioSource.PlayOneShot(deathSfx);
 
-        // Cambiar música a Game Over inmediatamente
         if (MusicManager.Instance != null && MenuController.Instance != null)
         {
             AudioClip gameOverClip = MenuController.Instance.GetGameOverMusic();
@@ -84,12 +82,12 @@ public class LevelManager : MonoBehaviour
         if (winCanvas != null)
             winCanvas.SetActive(true);
     }
+
     public void TriggerWin()
     {
         Debug.Log("Jugador llegó al objetivo. Victoria.");
         PlayerWon();
     }
-
 
     private void ReturnToMenu() => SceneManager.LoadScene(0);
 }

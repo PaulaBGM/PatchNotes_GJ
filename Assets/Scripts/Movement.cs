@@ -11,8 +11,11 @@ public class Movement : MonoBehaviour
     [SerializeField] private bool invertedControls = false;
 
     [Header("Audio")]
-    [SerializeField] private AudioClip jumpSfx;      // Sonido del salto
-    [SerializeField] private AudioSource audioSource; // Fuente de audio
+    [SerializeField] private AudioClip jumpSfx;
+    [SerializeField] private AudioSource audioSource;
+
+    [Header("Animation")]
+    [SerializeField] private Animator animator; // referencia al Animator del hijo
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -27,9 +30,12 @@ public class Movement : MonoBehaviour
         rb.freezeRotation = true;
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
-        // Si no se asignó AudioSource en el inspector, buscar uno en el mismo objeto
         if (audioSource == null)
             audioSource = GetComponent<AudioSource>();
+
+        // Si no está asignado en el inspector, busca el Animator en hijos
+        if (animator == null)
+            animator = GetComponentInChildren<Animator>();
     }
 
     private void Update()
@@ -39,6 +45,8 @@ public class Movement : MonoBehaviour
 
         if (Input.GetButtonDown("Jump"))
             TryJump();
+
+        UpdateAnimator(horiz);
     }
 
     public void Move(float rawHorizontal)
@@ -69,16 +77,13 @@ public class Movement : MonoBehaviour
     {
         if (!isGrounded) return;
 
-        // Detecta entrada horizontal en el momento del salto
         float horiz = float.IsNaN(injectedHorizontal) ? Input.GetAxisRaw("Horizontal") : injectedHorizontal;
         float moveInput = Mathf.Clamp(horiz, -1f, 1f);
         if (invertedControls) moveInput *= -1f;
 
-        // Aplica impulso vertical + un pequeño impulso horizontal
         Vector2 jumpForceVec = new Vector2(moveInput * (speed * 0.5f), jumpForce);
         rb.AddForce(jumpForceVec, ForceMode2D.Impulse);
 
-        // Reproducir sonido de salto
         if (audioSource != null && jumpSfx != null)
             audioSource.PlayOneShot(jumpSfx);
 
@@ -89,6 +94,21 @@ public class Movement : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Ground"))
             isGrounded = true;
+    }
+
+    private void UpdateAnimator(float horizInput)
+    {
+        if (animator == null) return;
+
+        float speedX = Mathf.Abs(rb.linearVelocity.x);
+        bool isWalking = speedX > 0.1f && isGrounded;
+        bool isJumping = !isGrounded;
+
+        animator.SetBool("Walk", isWalking);
+        animator.SetBool("Jump", isJumping);
+
+        // Idle implícito ni caminando ni saltando
+        animator.SetBool("Idle", !isWalking && !isJumping);
     }
 
     public void InjectHorizontalInput(float value) => injectedHorizontal = value;
