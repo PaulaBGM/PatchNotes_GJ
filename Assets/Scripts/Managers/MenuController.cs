@@ -10,6 +10,9 @@ public class MenuController : MonoBehaviour
     [SerializeField] private GameObject mainMenuCanvas;
     [SerializeField] private Button[] brokenButtons; // 0 = Difícil, 1 = Normal
     [SerializeField] private Button goodButton;      // Botón del nivel bueno
+    [SerializeField] private Button optionsButton;   // Botón de Opciones
+    [SerializeField] private GameObject optionsMenuCanvas; // Canvas del menú de opciones
+    [SerializeField] private OptionsMenuController optionsMenuController; // referencia al script
 
     [Header("Music Clips")]
     [SerializeField] private AudioClip menuMusic;
@@ -58,7 +61,13 @@ public class MenuController : MonoBehaviour
         if (goodButton != null)
             goodButton.onClick.AddListener(OnGoodButton);
 
+        if (optionsButton != null)
+            optionsButton.onClick.AddListener(OpenOptionsMenu);
+
         PlayMenuMusic();
+
+        if (optionsMenuCanvas != null)
+            optionsMenuCanvas.SetActive(false); // Que no se vea al inicio
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -68,7 +77,9 @@ public class MenuController : MonoBehaviour
             if (mainMenuCanvas != null)
                 mainMenuCanvas.SetActive(true);
 
-            // Activar botones según número de derrotas
+            if (optionsMenuCanvas != null)
+                optionsMenuCanvas.SetActive(false); // Ocultar opciones al entrar al menú
+
             for (int i = 0; i < brokenButtons.Length; i++)
                 brokenButtons[i].gameObject.SetActive(i <= brokenLossCount && i < brokenButtons.Length);
 
@@ -81,6 +92,9 @@ public class MenuController : MonoBehaviour
         {
             if (mainMenuCanvas != null)
                 mainMenuCanvas.SetActive(false);
+
+            if (optionsMenuCanvas != null)
+                optionsMenuCanvas.SetActive(false);
 
             if (MusicManager.Instance != null)
             {
@@ -97,28 +111,20 @@ public class MenuController : MonoBehaviour
             Debug.Log("Reproduciendo música de menú: " + menuMusic.name);
             MusicManager.Instance.PlayMusic(menuMusic, 1f);
         }
-        else
-        {
-            Debug.LogWarning("No se pudo reproducir música de menú: " +
-                (MusicManager.Instance == null ? "MusicManager.Instance es null " : "") +
-                (menuMusic == null ? "menuMusic no asignado" : ""));
-        }
     }
-
 
     public void OnLevelSelected(int idx)
     {
         nextLevelIsGood = false;
-        SceneManager.LoadScene(1); // Carga escena de nivel roto
+        SceneManager.LoadScene(1); // Nivel roto
     }
 
     public void OnGoodButton()
     {
         nextLevelIsGood = true;
-        SceneManager.LoadScene(1); // Carga escena del nivel bueno
+        SceneManager.LoadScene(1); // Nivel bueno
     }
 
-    // Solo registra derrota, no toca botones (los actualiza OnSceneLoaded al volver al menú)
     public void OnPlayerDeath()
     {
         brokenLossCount++;
@@ -133,4 +139,24 @@ public class MenuController : MonoBehaviour
     }
 
     public AudioClip GetGameOverMusic() => gameOverMusic;
+
+    // ---- NUEVO ----
+    public void OpenOptionsMenu()
+    {
+        if (mainMenuCanvas != null) mainMenuCanvas.SetActive(false);
+        if (optionsMenuCanvas != null)
+        {
+            optionsMenuCanvas.SetActive(true);
+
+            // Resetear paneles siempre que se abra el menú
+            if (optionsMenuController != null)
+                optionsMenuController.ResetPanels();
+        }
+    }
+
+    public void CloseOptionsMenu()
+    {
+        if (optionsMenuCanvas != null) optionsMenuCanvas.SetActive(false);
+        if (mainMenuCanvas != null) mainMenuCanvas.SetActive(true);
+    }
 }

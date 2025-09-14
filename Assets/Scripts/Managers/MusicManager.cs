@@ -64,4 +64,10 @@ public class MusicManager : MonoBehaviour
         nextSource = temp;
         nextSource.Stop();
     }
+    public void SetGlobalVolume(float volume)
+    {
+        currentSource.volume = volume;
+        nextSource.volume = volume;
+    }
+
 }
