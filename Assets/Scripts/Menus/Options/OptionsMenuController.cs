@@ -5,6 +5,8 @@ public class OptionsMenuController : MonoBehaviour
 {
     [Header("Panels")]
     [SerializeField] private GameObject optionsPanel;   // Panel principal (sliders + botones)
+    [SerializeField] private GameObject mainMenu;   // Panel principal (sliders + botones)
+
     [SerializeField] private GameObject creditsPanel;   // Panel de créditos
 
     [Header("Sliders")]
@@ -78,24 +80,26 @@ public class OptionsMenuController : MonoBehaviour
 
     public void OnExitButton()
     {
+        mainMenu.GetComponent<MenuController>().CloseOptionsMenu();
+
         // Cierra menú opciones (se encarga MenuController de mostrar el menú principal)
         gameObject.SetActive(false);
     }
 
     // ---- Métodos para cambios en vivo ----
-    private void OnMusicChanged(float value)
+    public void OnMusicChanged(float value)
     {
         tempData.musicVolume = value;
         OptionsManager.Instance?.SetMusicVolume(value);
     }
 
-    private void OnSfxChanged(float value)
+    public void OnSfxChanged(float value)
     {
         tempData.sfxVolume = value;
         OptionsManager.Instance?.SetSfxVolume(value);
     }
 
-    private void OnBrightnessChanged(float value)
+    public void OnBrightnessChanged(float value)
     {
         tempData.brightness = value;
         OptionsManager.Instance?.SetBrightness(value);
