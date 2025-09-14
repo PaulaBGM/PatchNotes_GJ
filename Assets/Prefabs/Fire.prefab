@@ -68,7 +68,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.33, y: -11}
+  m_Offset: {x: 0.0076475143, y: -7.0557404}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -78,7 +78,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 10.32432, y: 8.888519}
   m_EdgeRadius: 0
 --- !u!114 &5485043785721346027
 MonoBehaviour:
@@ -92,10 +92,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ca211a83971a78a4e97d82ec22822d22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  trapMode: 0
   fireAnimator: {fileID: 4545369449668888442}
-  fireCollider: {fileID: 4783645936161863120}
   fireTriggerName: Activate
-  cooldown: 3
+  activeTime: 1
+  cooldownTime: 2
 --- !u!1 &5592067570855169827
 GameObject:
   m_ObjectHideFlags: 0

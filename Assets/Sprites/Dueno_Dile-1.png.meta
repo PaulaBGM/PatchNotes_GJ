@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 1741d6c4e3fc33243a6e8df020d2ff80
+guid: 9459a8c692d536b4695085e33f942715
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 1954816566478393477
-    second: guion_0
+      213: -1777656708369279691
+    second: Dueno_Dile-1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -139,13 +139,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: guion_0
+      name: Dueno_Dile-1_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1920
-        height: 1080
+        x: 121
+        y: 61
+        width: 436
+        height: 520
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -154,8 +154,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5805ef56f47e02b10800000000000000
-      internalID: 1954816566478393477
+      spriteID: 5351f0564ae7457e0800000000000000
+      internalID: -1777656708369279691
       vertices: []
       indices: 
       edges: []
