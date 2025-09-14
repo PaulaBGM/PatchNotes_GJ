@@ -1,38 +1,87 @@
 using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Collider2D))]
 public class FireTrap : MonoBehaviour
 {
-    [SerializeField] private Animator fireAnimator; // Animador del hijo con fuego
-    [SerializeField] private string fireTriggerName = "Activate"; // Nombre del trigger en el Animator
+    public enum FireTrapMode { Instant, Timed }
 
-    private bool activated = false;
+    [Header("General Settings")]
+    [SerializeField] private FireTrapMode trapMode = FireTrapMode.Instant;
+    [SerializeField] private Animator fireAnimator;
+    [SerializeField] private string fireTriggerName = "Activate";
+
+    [Header("Timed Settings")]
+    [SerializeField] private float activeTime = 1f;   // Tiempo encendido
+    [SerializeField] private float cooldownTime = 2f; // Tiempo apagado
+
+    private bool isActive = false; // Solo se usa en modo Timed
+    private Coroutine cycleRoutine;
 
     private void Reset()
     {
-        // Autoasigna el Animator del hijo si existe
         if (fireAnimator == null)
             fireAnimator = GetComponentInChildren<Animator>();
 
-        // Asegurarse de que el collider es trigger
         var col = GetComponent<Collider2D>();
         if (col != null) col.isTrigger = true;
     }
 
+    private void Start()
+    {
+        // Configurar automáticamente según el nivel
+        if (LevelManager.Instance != null)
+        {
+            // En nivel Hard fuego instantáneo
+            if (!LevelManager.Instance.IsGoodLevel && LevelManager.Instance.BrokenLevelIndex == 0)
+                trapMode = FireTrapMode.Instant;
+            else
+                trapMode = FireTrapMode.Timed;
+        }
+
+        if (trapMode == FireTrapMode.Timed)
+            cycleRoutine = StartCoroutine(FireCycle());
+    }
+
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (activated) return;
+        if (!other.CompareTag("Player")) return;
 
-        if (other.CompareTag("Player"))
+        switch (trapMode)
         {
-            activated = true;
+            case FireTrapMode.Instant:
+                // Mata siempre
+                ActivateFire();
+                LevelManager.Instance?.PlayerDefeated("El jugador fue quemado por fuego instantáneo");
+                break;
 
-            // Activar animación de fuego
-            if (fireAnimator != null && !string.IsNullOrEmpty(fireTriggerName))
-                fireAnimator.SetTrigger(fireTriggerName);
+            case FireTrapMode.Timed:
+                if (isActive)
+                {
+                    LevelManager.Instance?.PlayerDefeated("El jugador fue quemado por fuego con temporizador");
+                }
+                break;
+        }
+    }
 
-            // Matar al jugador
-            LevelManager.Instance?.PlayerDefeated("El jugador fue quemado por fuego");
+    private void ActivateFire()
+    {
+        if (fireAnimator != null && !string.IsNullOrEmpty(fireTriggerName))
+            fireAnimator.SetTrigger(fireTriggerName);
+    }
+
+    private IEnumerator FireCycle()
+    {
+        while (true)
+        {
+            // Encender fuego
+            isActive = true;
+            ActivateFire();
+            yield return new WaitForSeconds(activeTime);
+
+            // Apagar fuego
+            isActive = false;
+            yield return new WaitForSeconds(cooldownTime);
         }
     }
 }

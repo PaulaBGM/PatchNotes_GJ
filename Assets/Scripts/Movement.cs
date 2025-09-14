@@ -8,53 +8,51 @@ public class Movement : MonoBehaviour
     [SerializeField] private float jumpForce = 7f;
 
     [Header("Level Settings")]
-    [SerializeField] private bool invertedControls = false; // Enable in "good" level
+    [SerializeField] private bool invertedControls = false;
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip jumpSfx;      // Sonido del salto
+    [SerializeField] private AudioSource audioSource; // Fuente de audio
 
     private Rigidbody2D rb;
     private bool isGrounded;
     private bool facingRight = true;
 
-    // External input injection (x = -1..1). If null, uses legacy Input.
     private float injectedHorizontal = float.NaN;
-
-    // Referencia al SpriteRenderer del hijo
     private SpriteRenderer spriteRenderer;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
-
-        // Asumimos que el hijo tiene el SpriteRenderer
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
+
+        // Si no se asignó AudioSource en el inspector, buscar uno en el mismo objeto
+        if (audioSource == null)
+            audioSource = GetComponent<AudioSource>();
     }
 
     private void Update()
     {
-        // Read inputs in Update (input timing)
         float horiz = float.IsNaN(injectedHorizontal) ? Input.GetAxisRaw("Horizontal") : injectedHorizontal;
         Move(horiz);
 
-        // Jump input
         if (Input.GetButtonDown("Jump"))
             TryJump();
     }
 
     public void Move(float rawHorizontal)
     {
-        // Normalize to -1/0/1 from legacy axes
         float moveInput = Mathf.Clamp(rawHorizontal, -1f, 1f);
 
         if (invertedControls)
             moveInput *= -1f;
 
-        // Flip sprite según dirección
         if (moveInput > 0 && !facingRight)
             Flip();
         else if (moveInput < 0 && facingRight)
             Flip();
 
-        // Apply X velocity; preserve Y
         Vector2 v = rb.linearVelocity;
         v.x = moveInput * speed;
         rb.linearVelocity = v;
@@ -70,7 +68,20 @@ public class Movement : MonoBehaviour
     private void TryJump()
     {
         if (!isGrounded) return;
-        rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+
+        // Detecta entrada horizontal en el momento del salto
+        float horiz = float.IsNaN(injectedHorizontal) ? Input.GetAxisRaw("Horizontal") : injectedHorizontal;
+        float moveInput = Mathf.Clamp(horiz, -1f, 1f);
+        if (invertedControls) moveInput *= -1f;
+
+        // Aplica impulso vertical + un pequeño impulso horizontal
+        Vector2 jumpForceVec = new Vector2(moveInput * (speed * 0.5f), jumpForce);
+        rb.AddForce(jumpForceVec, ForceMode2D.Impulse);
+
+        // Reproducir sonido de salto
+        if (audioSource != null && jumpSfx != null)
+            audioSource.PlayOneShot(jumpSfx);
+
         isGrounded = false;
     }
 
@@ -80,15 +91,7 @@ public class Movement : MonoBehaviour
             isGrounded = true;
     }
 
-    public void InjectHorizontalInput(float value)
-    {
-        injectedHorizontal = value;
-    }
-
-    public void ClearInjectedInput()
-    {
-        injectedHorizontal = float.NaN;
-    }
-
+    public void InjectHorizontalInput(float value) => injectedHorizontal = value;
+    public void ClearInjectedInput() => injectedHorizontal = float.NaN;
     public void SetInvertedControls(bool value) => invertedControls = value;
 }
