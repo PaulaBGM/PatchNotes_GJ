@@ -6,18 +6,18 @@ public class SceneBrightness : MonoBehaviour
 
     private void Awake()
     {
-        if (overlay == null)
-            overlay = GetComponent<CanvasGroup>();
+        if (overlay == null) overlay = GetComponent<CanvasGroup>();
     }
 
     private void OnEnable()
     {
-        // Valor inicial
+        // Aplica el valor guardado
+        float b = 1f;
+        if (OptionsManager.Instance != null) b = OptionsManager.Instance.Data.brightness;
+        Apply(b);
+
         if (OptionsManager.Instance != null)
-        {
-            Apply(OptionsManager.Instance.Data.brightness);
             OptionsManager.Instance.OnBrightnessChanged += Apply;
-        }
     }
 
     private void OnDisable()

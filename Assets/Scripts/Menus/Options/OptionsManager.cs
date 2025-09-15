@@ -58,5 +58,4 @@ public class OptionsManager : MonoBehaviour
         Data.brightness = Mathf.Clamp01(value);
         OnBrightnessChanged?.Invoke(Data.brightness);
     }
-
 }
