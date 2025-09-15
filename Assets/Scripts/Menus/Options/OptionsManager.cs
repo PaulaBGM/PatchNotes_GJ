@@ -6,7 +6,8 @@ public class OptionsManager : MonoBehaviour
     public OptionsData Data { get; private set; } = new OptionsData();
 
     public delegate void BrightnessChanged(float value);
-    public event BrightnessChanged OnBrightnessChanged;
+
+    public event System.Action<float> OnBrightnessChanged;
 
     private void Awake()
     {
@@ -54,7 +55,8 @@ public class OptionsManager : MonoBehaviour
 
     public void SetBrightness(float value)
     {
-        Data.brightness = value;
-        OnBrightnessChanged?.Invoke(value);
+        Data.brightness = Mathf.Clamp01(value);
+        OnBrightnessChanged?.Invoke(Data.brightness);
     }
+
 }
