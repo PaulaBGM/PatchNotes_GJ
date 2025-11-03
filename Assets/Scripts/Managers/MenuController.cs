@@ -8,10 +8,10 @@ public class MenuController : MonoBehaviour
 
     [Header("UI References")]
     [SerializeField] private GameObject mainMenuCanvas;
-    [SerializeField] private Button[] brokenButtons; // 0 = Difícil, 1 = Normal
-    [SerializeField] private Button goodButton;      // Botón del nivel bueno
-    [SerializeField] private Button optionsButton;   // Botón de Opciones
-    [SerializeField] private GameObject optionsMenuCanvas; // Canvas del menú de opciones
+    [SerializeField] private Button[] brokenButtons; // 0 = Difï¿½cil, 1 = Normal
+    [SerializeField] private Button goodButton;      // Botï¿½n del nivel bueno
+    [SerializeField] private Button optionsButton;   // Botï¿½n de Opciones
+    [SerializeField] private GameObject optionsMenuCanvas; // Canvas del menï¿½ de opciones
     [SerializeField] private OptionsMenuController optionsMenuController; // referencia al script
 
     [Header("Music Clips")]
@@ -45,7 +45,7 @@ public class MenuController : MonoBehaviour
     {
         if (mainMenuCanvas != null) mainMenuCanvas.SetActive(true);
 
-        // Mostrar solo el botón Difícil al inicio
+        // Mostrar solo el botï¿½n Difï¿½cil al inicio
         for (int i = 0; i < brokenButtons.Length; i++)
             brokenButtons[i].gameObject.SetActive(i == 0);
 
@@ -72,13 +72,13 @@ public class MenuController : MonoBehaviour
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.buildIndex == 0) // Menú
+        if (scene.buildIndex == 0) // Menï¿½
         {
             if (mainMenuCanvas != null)
                 mainMenuCanvas.SetActive(true);
 
             if (optionsMenuCanvas != null)
-                optionsMenuCanvas.SetActive(false); // Ocultar opciones al entrar al menú
+                optionsMenuCanvas.SetActive(false); // Ocultar opciones al entrar al menï¿½
 
             for (int i = 0; i < brokenButtons.Length; i++)
                 brokenButtons[i].gameObject.SetActive(i <= brokenLossCount && i < brokenButtons.Length);
@@ -108,7 +108,7 @@ public class MenuController : MonoBehaviour
     {
         if (MusicManager.Instance != null && menuMusic != null)
         {
-            Debug.Log("Reproduciendo música de menú: " + menuMusic.name);
+            Debug.Log("Reproduciendo mï¿½sica de menï¿½: " + menuMusic.name);
             MusicManager.Instance.PlayMusic(menuMusic, 1f);
         }
     }
@@ -148,7 +148,7 @@ public class MenuController : MonoBehaviour
         {
             optionsMenuCanvas.SetActive(true);
 
-            // Resetear paneles siempre que se abra el menú
+            // Resetear paneles siempre que se abra el menï¿½
             if (optionsMenuController != null)
                 optionsMenuController.ResetPanels();
         }

@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using System.Collections;
 
@@ -29,10 +30,10 @@ public class FireTrap : MonoBehaviour
 
     private void Start()
     {
-        // Configurar automáticamente según el nivel
+        // Configurar automï¿½ticamente segï¿½n el nivel
         if (LevelManager.Instance != null)
         {
-            // En nivel Hard fuego instantáneo
+            // En nivel Hard fuego instantï¿½neo
             if (!LevelManager.Instance.IsGoodLevel && LevelManager.Instance.BrokenLevelIndex == 0)
                 trapMode = FireTrapMode.Instant;
             else
@@ -47,21 +48,59 @@ public class FireTrap : MonoBehaviour
     {
         if (!other.CompareTag("Player")) return;
 
+        SpriteRenderer playerVisual = other.gameObject.GetComponentInChildren<SpriteRenderer>();
+        Rigidbody2D rb = other.GetComponent<Rigidbody2D>();
+        Collider2D collider = other.GetComponent<Collider2D>();
+
+        if (playerVisual == null) return;
+
+        // Detenemos el movimiento fÃ­sico del jugador
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;       // Detiene el movimiento
+            rb.bodyType = RigidbodyType2D.Kinematic;            // Desactiva las fÃ­sicas
+        }
+
+        if (collider != null)
+        {
+            collider.enabled = false;         // Evita que siga activando cosas
+        }
+
         switch (trapMode)
         {
             case FireTrapMode.Instant:
-                // Mata siempre
                 ActivateFire();
-                LevelManager.Instance?.PlayerDefeated("El jugador fue quemado por fuego instantáneo");
+                StartCoroutine(FadeOutPlayer(playerVisual));
+                LevelManager.Instance?.PlayerDefeated("El jugador fue quemado por fuego instantÃ¡neo");
                 break;
 
             case FireTrapMode.Timed:
                 if (isActive)
                 {
+                    StartCoroutine(FadeOutPlayer(playerVisual));
                     LevelManager.Instance?.PlayerDefeated("El jugador fue quemado por fuego con temporizador");
                 }
                 break;
         }
+    }
+    
+    private IEnumerator FadeOutPlayer(SpriteRenderer playerVisual)
+    {
+        float fadeDuration = 1f; // tiempo del desvanecido
+        float elapsed = 0f;
+        Color color = playerVisual.color;
+        float startAlpha = color.a;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+            color.a = Mathf.Lerp(startAlpha, 0f, elapsed / fadeDuration);
+            playerVisual.color = color;
+            yield return null;
+        }
+
+        // finalmente desactiva el sprite
+        playerVisual.enabled = false;
     }
 
     private void ActivateFire()
